@@ -2,53 +2,49 @@ import {MotionSensor, SurveillanceController, VideoRecorder} from "../core/surve
 
 describe('The Surveillance Controller', () => {
     it('asks the recorder to stop recording when the sensor detects no motion', () => {
-        let called = false;
-        const saveCall = () => {
-            called = true;
-        };
-        const sensor = new FakeSensor();
-        const recorder = new FakeRecorder();
-        recorder.stopRecording = saveCall;
-
+        const sensor = new StubSensorDetectingNoMotion();
+        const recorder = new SpyVideoRecorder();
         const controller = new SurveillanceController(sensor, recorder);
 
         controller.recordMotion();
 
-        expect(called).toBeTruthy();
+        expect(recorder.stopCalled).toBeTruthy();
     });
 });
 
 describe('The Surveillance Controller', () => {
     it('asks the recorder to start recording when the sensor detects motion', () => {
-        let called = false;
-        const saveCall = () => {
-            called = true;
-        };
-        const sensor = new FakeSensor();
-        sensor.isDetectingMotion = () => true;
-        const recorder = new FakeRecorder();
-        recorder.startRecording = saveCall;
-
+        const sensor = new StubSensorDetectingMotion();
+        const recorder = new SpyVideoRecorder();
         const controller = new SurveillanceController(sensor, recorder);
 
         controller.recordMotion();
 
-        expect(called).toBeTruthy();
+        expect(recorder.startCalled).toBeTruthy();
     });
 });
 
-class FakeSensor implements MotionSensor {
+class StubSensorDetectingMotion implements MotionSensor {
+    isDetectingMotion(): boolean {
+        return true;
+    }
+}
+
+class StubSensorDetectingNoMotion implements MotionSensor {
     isDetectingMotion(): boolean {
         return false;
     }
 }
 
-class FakeRecorder implements VideoRecorder {
+class SpyVideoRecorder implements VideoRecorder {
+    startCalled = false;
+    stopCalled = false;
+
     startRecording(): void {
-        console.log('start recording...');
+        this.startCalled = true;
     }
 
     stopRecording(): void {
-        console.log('stop recording...');
+        this.stopCalled = true;
     }
 }
