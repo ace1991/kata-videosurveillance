@@ -39,6 +39,15 @@ describe('The Surveillance Controller', () => {
 
         expect(spyRecorder).toHaveBeenCalled();
     });
+
+    it('checks the sensor status once per second', () => {
+        const sensorSpy = jest.spyOn(sensor, 'isDetectingMotion');
+        const numberOfSeconds = 3;
+
+        controller.recordMotion(numberOfSeconds);
+
+        expect(sensorSpy).toHaveBeenCalledTimes(numberOfSeconds);
+    });
 });
 
 class StubSensorDetectingMotion implements MotionSensor {
